@@ -1,0 +1,40 @@
+---
+- name: Download kibana 4.2
+  get_url:
+    url: 'https://download.elastic.co/kibana/kibana/kibana-4.2.0-linux-x64.tar.gz'
+    dest: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+
+- name: Add kibana group
+  group:
+    name: kibana
+    state: present
+
+- name: Add kibana user
+  user:
+    name: kibana
+    group: kibana
+    system: yes
+    state: present
+
+- name: Unpack kibana archive
+  unarchive:
+    src: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+    dest: '/opt'
+    copy: no
+    owner: kibana
+    group: kibana
+  notify: restart kibana
+
+- name: Create symlink to kibana install
+  file:
+    src: "/opt/kibana-4.2.0-linux-x64"
+    dest: "/opt/kibana"
+    state: link
+    group: kibana
+  notify: restart kibana
+
+- name: Enable kibana at boot
+  service:
+    name: kibana
+    enabled: yes
+  notify: restart kibana

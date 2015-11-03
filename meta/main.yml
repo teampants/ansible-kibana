@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: Eric Cassady (github@noteric.com)
+  description: Kibana 4.2
+  license: Apache 2.0
+  min_ansible_version: 1.9.1
+
+dependencies:
+  - role: smola.java
+    java_packages: [ "oracle-java7-installer" ]
+  - role: telusdigital.upstart
+    upstart_name: kibana
+    upstart_exec_path: "/opt/kibana/bin/kibana"
+    upstart_user: kibana
+    upstart_group: kibana
+    upstart_start_on:
+      - startup
+    upstart_stop_on:
+      - shutdown
+
