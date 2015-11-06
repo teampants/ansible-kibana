@@ -38,3 +38,12 @@
     name: kibana
     enabled: yes
   notify: restart kibana
+
+- name: Configure kibana
+  template:
+    src: "kibana.yml.j2"
+    dest: "/opt/kibana/config/kibana.yml"
+    owner: kibana
+    group: kibana
+    mode: 0640
+  notify: restart kibana
