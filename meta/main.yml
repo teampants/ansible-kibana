@@ -17,4 +17,15 @@ dependencies:
       - startup
     upstart_stop_on:
       - shutdown
-
+  - role: tersmitten.logrotated
+    logrotated_logrotate_d_files:
+      kibana:
+        - logs:
+            - /var/log/kibana/kibana.log
+          daily: true
+          rotate: 7
+          copytruncate: true
+          compress: true
+          delaycompress: true
+          notifempty: true
+          missingok: true
