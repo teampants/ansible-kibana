@@ -47,3 +47,25 @@
     group: kibana
     mode: 0640
   notify: restart kibana
+
+# Workaround for kibana 4.3 issue https://github.com/elastic/kibana/issues/5524
+- name: Flush handlers to ensure a local elasticsearch has been started
+  meta: flush_handlers
+  when: kibana_issue_5524_workaround
+
+- name: Install httplib2
+  pip:
+    name: httplib2
+
+- name: Set elasticsearch max_result_window to 2147483647 to work around https://github.com/elastic/kibana/issues/5524
+  uri:
+    url: "{{ kibana_elasticsearch_url }}/.kibana/_settings"
+    body: '{ "index" : { "max_result_window" : 2147483647 } }'
+    method: PUT
+    status_code: 200
+  when: kibana_issue_5524_workaround
+  register: result
+  until: result.status is defined and result.status == 200
+  retries: 10
+  delay: 5
+
