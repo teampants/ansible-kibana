@@ -1,0 +1,3 @@
+---
+server.host: {{ hostvars[inventory_hostname]['ansible_' + kibana_listen_interface].ipv4.address }}
+elasticsearch.url: '{{ kibana_elasticsearch_url }}'

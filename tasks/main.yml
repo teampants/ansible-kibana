@@ -1,0 +1,71 @@
+---
+- name: Download kibana 4.2
+  get_url:
+    url: 'https://download.elastic.co/kibana/kibana/kibana-4.2.0-linux-x64.tar.gz'
+    dest: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+
+- name: Add kibana group
+  group:
+    name: kibana
+    state: present
+
+- name: Add kibana user
+  user:
+    name: kibana
+    group: kibana
+    system: yes
+    state: present
+
+- name: Unpack kibana archive
+  unarchive:
+    src: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+    dest: '/opt'
+    copy: no
+    owner: kibana
+    group: kibana
+  notify: restart kibana
+
+- name: Create symlink to kibana install
+  file:
+    src: "/opt/kibana-4.2.0-linux-x64"
+    dest: "/opt/kibana"
+    state: link
+    group: kibana
+  notify: restart kibana
+
+- name: Enable kibana at boot
+  service:
+    name: kibana
+    enabled: yes
+  notify: restart kibana
+
+- name: Configure kibana
+  template:
+    src: "kibana.yml.j2"
+    dest: "/opt/kibana/config/kibana.yml"
+    owner: kibana
+    group: kibana
+    mode: 0640
+  notify: restart kibana
+
+# Workaround for kibana 4.3 issue https://github.com/elastic/kibana/issues/5524
+- name: Flush handlers to ensure a local elasticsearch has been started
+  meta: flush_handlers
+  when: kibana_issue_5524_workaround
+
+- name: Install httplib2
+  pip:
+    name: httplib2
+
+- name: Set elasticsearch max_result_window to 2147483647 to work around https://github.com/elastic/kibana/issues/5524
+  uri:
+    url: "{{ kibana_elasticsearch_url }}/.kibana/_settings"
+    body: '{ "index" : { "max_result_window" : 2147483647 } }'
+    method: PUT
+    status_code: 200
+  when: kibana_issue_5524_workaround
+  register: result
+  until: result.status is defined and result.status == 200
+  retries: 10
+  delay: 5
+
