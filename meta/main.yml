@@ -6,9 +6,9 @@ galaxy_info:
   min_ansible_version: 1.9.1
 
 dependencies:
-  - role: smola.java
+  - role: dwcramer.java
     java_packages: [ "oracle-java7-installer" ]
-  - role: telusdigital.upstart
+  - role: dwcramer.upstart
     upstart_name: kibana
     upstart_exec_path: "/opt/kibana/bin/kibana"
     upstart_user: kibana
