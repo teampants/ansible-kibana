@@ -1,8 +1,14 @@
 ---
-- name: Download kibana 4.2
+- name: Check if kibana already exists at this version
+  stat:
+    path: "/opt/kibana-{{ kibana_version }}-linux-x64"
+  register: kibana_version_path
+
+- name: Download kibana {{ kibana_version }}
   get_url:
-    url: 'https://download.elastic.co/kibana/kibana/kibana-4.2.0-linux-x64.tar.gz'
-    dest: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+    url: 'https://download.elastic.co/kibana/kibana/kibana-{{ kibana_version }}-linux-x64.tar.gz'
+    dest: '/tmp/kibana-{{ kibana_version }}-linux-x64.tar.gz'
+  when: not kibana_version_path.stat.exists
 
 - name: Add kibana group
   group:
@@ -18,16 +24,17 @@
 
 - name: Unpack kibana archive
   unarchive:
-    src: '/tmp/kibana-4.2.0-linux-x64.tar.gz'
+    src: '/tmp/kibana-{{ kibana_version }}-linux-x64.tar.gz'
     dest: '/opt'
     copy: no
     owner: kibana
     group: kibana
   notify: restart kibana
+  when: not kibana_version_path.stat.exists
 
 - name: Create symlink to kibana install
   file:
-    src: "/opt/kibana-4.2.0-linux-x64"
+    src: "/opt/kibana-{{ kibana_version }}-linux-x64"
     dest: "/opt/kibana"
     state: link
     group: kibana
@@ -68,4 +75,3 @@
   until: result.status is defined and result.status == 200
   retries: 10
   delay: 5
-
