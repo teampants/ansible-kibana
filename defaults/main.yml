@@ -2,4 +2,5 @@
 # Ethernet interface to listen on. Defaults to loopback. Examples: lo, eth0, eth1
 kibana_listen_interface: 'lo'
 kibana_elasticsearch_url: 'http://localhost:9200'
-kibana_issue_5524_workaround: true
+kibana_issue_5524_workaround: "{{ True if kibana_version | version_compare('4.3.0', '<=') else False }}"
+kibana_version: 4.6.1
